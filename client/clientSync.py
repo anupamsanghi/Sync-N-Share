@@ -42,54 +42,64 @@ def createDiff(C, X, Y,i,j, arr):
             createDiff(C, X, Y, i-1, j,arr)
             diff.append("-^" + str(i) +"\n")
 
-def init(operation,filename):
-	HOST, PORT = "localhost", 5000
-	#operation = sys.argv[1]
-	#filename = sys.argv[2]
+def sync(sock, operation, filename):
 	print filename
-	filename1 = filename[13:]
 	try:
 		fp=open("userlog",'r')
 		for line in fp:
 			userinfo = line
-	#	print filename1
-		data = operation+'^'+filename1
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		data = operation+'^'+filename
 	except:
 		print "file missing"
 	try:
-	    # Connect to server and send data
-	    sock.connect((HOST, PORT))
 	    string = userinfo+'^'+data
-	    #print string
 	    fp.close()
 	    sock.send(string)
-	    received = sock.recv(1024)
-	    print received
 	except:
 		print "Unexpected error:", sys.exec_info()[0]
-	print data
-	print received
-	hashlist1=received.split()
-	#fetchfile=data.split('_')
-	fp=open(filename,'r')
-	filelist=[]
-	hashlist2=[]
-	for line in fp:
-		hashlist2.append(str(hash(line)))
-		filelist.append(line)
-	C = LCS(hashlist1, hashlist2) 
-	#print  backTrack(C, hashlist1, hashlist2,len(hashlist1),len(hashlist2))
-	createDiff(C, hashlist1, hashlist2,len(hashlist1),len(hashlist2),filelist)
-	#print diff
-	content=''.join(diff)
-	if content=='':
-		print "there were no updations"
-	else:
-		print content
-		try:
-			sock.send(content)
-		except:
-			print "Unexpected error:", sys.exec_info()[0]
-		finally:
-		    sock.close()
+	if operation !=  "delete":
+		received = sock.recv(1024)
+		hashlist1=received.split()
+		fp=open("Sync-n-Share"+filename,'r')
+		filelist=[]
+		hashlist2=[]
+		for line in fp:
+			hashlist2.append(str(hash(line)))
+			filelist.append(line)
+		C = LCS(hashlist1, hashlist2) 
+		createDiff(C, hashlist1, hashlist2,len(hashlist1),len(hashlist2),filelist)
+		content=''.join(diff)
+		print "content is:"+content
+		del diff[0:len(diff)]
+		if content=='' and received!=' ':
+			print "there were no updations"
+		else:
+			print "content is:"+content+"over"
+			try:
+				sock.send(content)
+			except:
+				print "Unexpected error:", sys.exec_info()[0]
+
+	#sock.close()
+
+def init(sock, updatelist):
+	for key, values in updatelist.iteritems():
+		if values:
+			print key + ":" + str( values )
+			if key == "rename":
+				for value in values:
+					temp1 = value[0].split("Sync-n-Share")
+					oldfile = temp1[-1]
+					temp2 = value[1].split("Sync-n-Share")
+					newfile = temp2[-1]
+					sync(sock, key, oldfile+"^"+newfile)
+			elif key =="delete":
+				string = ''
+				for value in values:
+					value = value.split("Sync-n-Share")
+					string = string + value[-1]+ '^'
+				sync(sock, key, string)
+			else :
+				for value in values:
+					value = value.split("Sync-n-Share")
+					sync(sock, key, value[-1])
