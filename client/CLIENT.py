@@ -11,7 +11,7 @@ import clientSync
 def countUpdates(updatelist):
 	count = len(updatelist["add"])+len(updatelist["modify"])+len(updatelist["rename"])
 	if updatelist["delete"]:count +=1	
-	print "val"+str(count)
+	#print "val"+str(count)
 	return count
 
 def getUser(sock):
@@ -31,21 +31,25 @@ if __name__=="__main__":
 	sock.send(userinfo)
 	while 1:
 		print "in loop"
+		updatelist = detect.init()
+		count = countUpdates(updatelist) 
 		content = sock.recv(1024)
 		sock.send('1')
-		print "val"+content
+		print "count value : "+content
 		if content!= '0':
 			for i in range(0,int(content)):
-				updateClient.update(sock)
-		updatelist = detect.init()
-		print ":"
+				updatelist = updateClient.init(sock, updatelist)
+		#print updatelist
+		if count > 0:
+				print "updating log file"
+				detect.createlogfile()
 		print updatelist
 		count = countUpdates(updatelist) 
-		op = connectify.getResponse(str(count), sock)
-		#time.sleep(2)
+		op = connectify.getResponse(str(count), sock)	
+		time.sleep(2)
 		if op == '1':
 			if count > 0:
-				detect.createlogfile()
 				clientSync.init(sock, updatelist)
-		time.sleep(2)
+			#	detect.createlogfile()
+		#time.sleep(2)
 	connectify.closeCon(sock)

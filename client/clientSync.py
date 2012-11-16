@@ -43,7 +43,7 @@ def createDiff(C, X, Y,i,j, arr):
             diff.append("-^" + str(i) +"\n")
 
 def sync(sock, operation, filename):
-	print filename
+	#print filename
 	try:
 		fp=open("userlog",'r')
 		for line in fp:
@@ -57,7 +57,7 @@ def sync(sock, operation, filename):
 	    sock.send(string)
 	except:
 		print "Unexpected error:", sys.exec_info()[0]
-	if operation !=  "delete":
+	if operation ==  "add" or operation =="modify":
 		received = sock.recv(1024)
 		hashlist1=received.split()
 		fp=open("Sync-n-Share"+filename,'r')
@@ -69,12 +69,12 @@ def sync(sock, operation, filename):
 		C = LCS(hashlist1, hashlist2) 
 		createDiff(C, hashlist1, hashlist2,len(hashlist1),len(hashlist2),filelist)
 		content=''.join(diff)
-		print "content is:"+content
+		#print "content is:"+content
 		del diff[0:len(diff)]
 		if content=='' and received!=' ':
 			print "there were no updations"
 		else:
-			print "content is:"+content+"over"
+			#print "content is:"+content+"over"
 			try:
 				sock.send(content)
 			except:
@@ -85,13 +85,14 @@ def sync(sock, operation, filename):
 def init(sock, updatelist):
 	for key, values in updatelist.iteritems():
 		if values:
-			print key + ":" + str( values )
+			#print key + ":" + str( values )
 			if key == "rename":
 				for value in values:
 					temp1 = value[0].split("Sync-n-Share")
 					oldfile = temp1[-1]
 					temp2 = value[1].split("Sync-n-Share")
 					newfile = temp2[-1]
+					#print oldfile+'^'+newfile
 					sync(sock, key, oldfile+"^"+newfile)
 			elif key =="delete":
 				string = ''

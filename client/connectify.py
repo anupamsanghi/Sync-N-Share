@@ -8,8 +8,10 @@ def createCon():
 	return sock
 
 def getResponse(data, sock):
+	print "connectify:"+data
 	sock.send(data)
 	received = sock.recv(1024)
+	print "received :"+received
 	return received
 
 def closeCon(sock):
