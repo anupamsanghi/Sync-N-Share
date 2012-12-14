@@ -2,7 +2,7 @@ import os
 
 def read(request):
 	
-	filename = "/home/sweksha/node_modules/share/examples/filesystem/"+request
+	filename = "filesystem/"+request
 	try:
 		fp = open(filename, 'r')
 		string = ''
@@ -16,7 +16,7 @@ def read(request):
 
 def write(request):
 	request = request.split('#')
-	filename = "/home/sweksha/node_modules/share/examples/filesystem/"+request[0]
+	filename = "filesystem/"+request[0]
 	content = '#'.join(request[1:])
 	print content
 	fp = open(filename,'w')
@@ -32,9 +32,9 @@ def rename(request):
 	print fileold
 	print filenew
 	print repoid
-	for filename in os.listdir("/home/sweksha/node_modules/share/examples/filesystem/"):
+	for filename in os.listdir("filesystem/"):
 		if filename.startswith(repoid+'^'+fileold+'^'):
 			version = filename[-1]
 			print filename
-			os.rename("/home/sweksha/node_modules/share/examples/filesystem/"+filename,"/home/sweksha/node_modules/share/examples/filesystem/"+repoid+'^'+filenew+'^'+version)
+			os.rename("filesystem/"+filename,"filesystem/"+repoid+'^'+filenew+'^'+version)
 	return "done"
